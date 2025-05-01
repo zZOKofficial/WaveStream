@@ -1,12 +1,22 @@
-<?php
+namespace App\Http\Controllers\Admin;
 
-namespace App\Http\Controllers;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\Models\User;
 
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Foundation\Validation\ValidatesRequests;
-use Illuminate\Routing\Controller as BaseController;
-
-class Controller extends BaseController
+class UserController extends Controller
 {
-    use AuthorizesRequests, ValidatesRequests;
+    public function toggleStatus(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'is_active' => 'required|boolean',
+        ]);
+
+        $user->is_active = $validated['is_active'];
+        $user->save();
+
+        return response()->json(['success' => true]);
+    }
+
+    // other methods like index(), create(), store(), etc.
 }
