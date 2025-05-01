@@ -29,8 +29,8 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($users as $user)
-                                <tr>
+                                @forelse($users as $user)
+                                <tr id="user-row-{{ $user->id }}">
                                     <td>{{ $user->name }}</td>
                                     <td>{{ $user->email }}</td>
                                     <td>
@@ -39,7 +39,7 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <span class="badge {{ $user->is_active ? 'bg-success' : 'bg-danger' }}">
+                                        <span id="status-badge-{{ $user->id }}" class="badge {{ $user->is_active ? 'bg-success' : 'bg-danger' }}">
                                             {{ $user->is_active ? 'Active' : 'Inactive' }}
                                         </span>
                                     </td>
@@ -49,8 +49,10 @@
                                             <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-sm btn-primary">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-                                            <button type="button" class="btn btn-sm {{ $user->is_active ? 'btn-danger' : 'btn-success' }}"
-                                                    onclick="toggleUserStatus({{ $user->id }}, {{ $user->is_active ? 'false' : 'true' }})">
+                                            <button id="toggle-btn-{{ $user->id }}"
+                                                type="button"
+                                                class="btn btn-sm {{ $user->is_active ? 'btn-danger' : 'btn-success' }}"
+                                                onclick="toggleUserStatus({{ $user->id }}, {{ $user->is_active ? 'false' : 'true' }})">
                                                 <i class="fas {{ $user->is_active ? 'fa-user-slash' : 'fa-user-check' }}"></i>
                                             </button>
                                             <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="d-inline">
@@ -63,7 +65,11 @@
                                         </div>
                                     </td>
                                 </tr>
-                                @endforeach
+                                @empty
+                                <tr>
+                                    <td colspan="6" class="text-center">No users found.</td>
+                                </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
@@ -89,7 +95,14 @@ function toggleUserStatus(userId, isActive) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                location.reload();
+                const badge = document.getElementById(`status-badge-${userId}`);
+                badge.className = 'badge ' + (isActive ? 'bg-success' : 'bg-danger');
+                badge.textContent = isActive ? 'Active' : 'Inactive';
+
+                const button = document.getElementById(`toggle-btn-${userId}`);
+                button.className = 'btn btn-sm ' + (isActive ? 'btn-danger' : 'btn-success');
+                button.setAttribute('onclick', `toggleUserStatus(${userId}, ${!isActive})`);
+                button.innerHTML = `<i class="fas ${isActive ? 'fa-user-slash' : 'fa-user-check'}"></i>`;
             } else {
                 alert('Failed to update user status');
             }
@@ -117,4 +130,4 @@ function toggleUserStatus(userId, isActive) {
     }
 </style>
 @endpush
-@endsection 
+@endsection
