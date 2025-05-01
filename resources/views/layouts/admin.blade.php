@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Music System</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     @stack('styles')
@@ -58,6 +59,11 @@
                                 <i class="fas fa-users me-2"></i>Manage Users
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white {{ request()->routeIs('admin.profile') ? 'active' : '' }}" href="{{ route('admin.profile') }}">
+                                <i class="fas fa-user me-2"></i>Profile
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </nav>
@@ -84,6 +90,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     @stack('scripts')
 </body>
 </html>
@@ -118,23 +125,6 @@
         box-shadow: inset -1px 0 0 rgba(0, 0, 0, .25);
     }
 
-    .navbar .form-control {
-        padding: .75rem 1rem;
-        border-width: 0;
-        border-radius: 0;
-    }
-
-    .form-control-dark {
-        color: #fff;
-        background-color: rgba(255, 255, 255, .1);
-        border-color: rgba(255, 255, 255, .1);
-    }
-
-    .form-control-dark:focus {
-        border-color: transparent;
-        box-shadow: 0 0 0 3px rgba(255, 255, 255, .25);
-    }
-
     @media (max-width: 767.98px) {
         .sidebar {
             position: fixed;
@@ -147,4 +137,33 @@
         }
     }
 </style>
-@endpush 
+@endpush
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.toggle-status').forEach(button => {
+            button.addEventListener('click', function () {
+                const userId = this.dataset.userId;
+                const isActive = this.dataset.active === '1' ? 0 : 1;
+
+                fetch(`/admin/users/${userId}/toggle-status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({ is_active: isActive })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        });
+    });
+</script>
+@endpush
